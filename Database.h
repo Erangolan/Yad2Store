@@ -13,7 +13,7 @@ using namespace std;
 #define DB_HOST "tcp://127.0.0.1/"
 #define DB_PORT 3306
 #define DB_USER "root"
-#define DB_PASS ""
+#define DB_PASS "eran1924"
 
 class Database {
 private:

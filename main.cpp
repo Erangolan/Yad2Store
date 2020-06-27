@@ -101,10 +101,10 @@ int main(int argc, const char* argv[]) {
 			topThreeCustomers();
 			break;
 
-		/*case 8:
+		case 8:
 			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
-			to complete();
-			break;*/
+			mostTranslateBook();
+			break;
 
 		case 9:
 			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
@@ -130,10 +130,13 @@ int main(int argc, const char* argv[]) {
 			shippingPrice(order_id);
 			break;
 
-		/*case 12:
+		case 12:
 			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
-			to complete();
-			break;*/
+			cout << "please insert customer's id" << '\n';
+			cin >> order_id;
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			splittingShippOrder(order_id);
+			break;
 
 		case 13:
 			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
@@ -159,6 +162,69 @@ int main(int argc, const char* argv[]) {
 			cout << "please insert month" << '\n';
 			getline(cin, fDate);
 			sumAmountPayedInBit(sDate, fDate);
+			break;
+
+		/*case 16:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			to complete();
+			break;*/
+
+		case 17:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			sumAmountShipping();
+			break;
+
+
+		case 20:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			badCustomers();
+			break;
+
+		case 22:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			cout << "please insert start date" << '\n';
+			getline(cin, sDate);
+			cout << "please insert end date" << '\n';
+			getline(cin, fDate);
+			storeBought(sDate, fDate);
+			break;
+
+
+		case 23:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			cout << "please insert year" << '\n';
+			getline(cin, sDate);
+			cout << "please insert month" << '\n';
+			getline(cin, fDate);
+			storeProfit(sDate, fDate);
+			break;
+
+		case 24:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			cout << "please insert year" << '\n';
+			getline(cin, sDate);
+			transactionsAmountEveryMonth(sDate);
+			break;
+
+		case 25:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			cout << "please insert employ's id" << '\n';
+			cin >> cust_id;
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			cout << "please insert year" << '\n';
+			getline(cin, sDate);
+			cout << "please insert month" << '\n';
+			getline(cin, fDate);
+			employSalary(sDate, fDate, cust_id);
+			break;
+
+		case 26:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			cout << "please insert year" << '\n';
+			getline(cin, sDate);
+			cout << "please insert month" << '\n';
+			getline(cin, fDate);
+			bestSellerEmploy(sDate, fDate);
 			break;
 
 		case 99:

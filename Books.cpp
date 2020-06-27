@@ -144,13 +144,13 @@ int orderList() {
 	try {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT "
-			"order_id, customers.cust_fname, customers.cust_lname, orders.book_id, title, order_date, payment_amount, method_options.meth_type, shipping_options.ship_type "
+			"order_id, customers.cust_fname, customers.cust_lname, orders.book_id, title, order_date, method_options.meth_type, shipping_options.ship_type "
 			"FROM yad_two_store.orders "
 			"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = orders.book_id "
 			"LEFT JOIN yad_two_store.customers ON customers.cust_id = orders.cust_id "
 			"LEFT JOIN yad_two_store.method_options ON method_options.meth_id = orders.meth_id "
 			"LEFT JOIN yad_two_store.shipping_options ON shipping_options.ship_id = orders.ship_id "
-			"WHERE arrive = 0 "
+			"WHERE status_id != 4 "
 			"GROUP BY order_date "
 			"ORDER BY order_date ASC; "
 		);
@@ -158,15 +158,15 @@ int orderList() {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "The book does not exist in our storage" << endl;
+			cout << endl << "All orders already arrived!" << endl;
 		else {
-			VariadicTable<int, string, string, int, string, string, int, string, string> 
-				vt({ "order ID", "cust Fname", "cust Lname", "book ID", "Title", "Order Date", "payment amount", "payed by", "shipp by" });
+			VariadicTable<int, string, string, int, string, string, string, string> 
+				vt({ "order ID", "cust Fname", "cust Lname", "book ID", "Title", "Order Date", "payed by", "shipp by" });
 			
 			while (rset->next()) {
 				vt.addRow(rset->getInt("order_id"), rset->getString("cust_fname"), rset->getString("cust_lname"),
 						  rset->getInt("book_id"), rset->getString("title"), rset->getString("order_date"),
-						  rset->getInt("payment_amount"), rset->getString("meth_type"), rset->getString("ship_type") );
+						  rset->getString("meth_type"), rset->getString("ship_type"));
 			}
 			vt.print(cout);
 			
@@ -294,11 +294,57 @@ int topThreeCustomers() {
 }
 
 
-/*--------------------to complete 8!!-------------*/
-/*--------------------to complete 8!!-------------*/
-/*--------------------to complete 8!!-------------*/
-/*--------------------to complete 8!!-------------*/
-/*--------------------to complete 8!!-------------*/
+
+
+
+
+
+
+
+
+/*========8========*/
+// the book with the biggest amount of translations
+int mostTranslateBook() {
+	Database& db = Database::getInstance();
+	try {
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT "
+			"title, author, translate_number "
+			"FROM yad_two_store.book_attributes "
+			"ORDER BY translate_number DESC "
+			"LIMIT 1 "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+		if (rset->rowsCount() == 0)
+			cout << endl << "error..." << endl;
+		else {
+			rset->next();
+			cout << endl;
+			cout << "The book with the biggest amount of translations is: " << rset->getString("title") << ", by: " << rset->getString("author")
+				<< ". and was translated to " << rset->getString("translate_number") << " languages." << '\n';
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
+
+
+
+
+
+
+
+
+
+
 
 
 /*========9========*/
@@ -308,7 +354,7 @@ int customerSalesHistory(int cust_id) {
 	try {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT "
-			"trans_id, book_attributes.book_id, cust_id, trans_date, payment_amount, books_num, title, author "
+			"trans_id, book_attributes.book_id, cust_id, trans_date, books_num, title, author "
 			"FROM ( "
 				"SELECT * "
 				"FROM yad_two_store.transactions "
@@ -323,12 +369,12 @@ int customerSalesHistory(int cust_id) {
 		if (rset->rowsCount() == 0)
 			cout << endl << "There are no open orders" << endl;
 		else {
-			VariadicTable<int, int, int, string, int, int, string, string> 
+			VariadicTable<int, int, int, string, int, string, string> 
 				vt({ "Transaction ID", "Book ID", "Customer ID", "Transaction Date",
-					 "payment amount", "Number of books", "Title", "Author" });
+					 "Number of books", "Title", "Author" });
 			while (rset->next()) {
 				vt.addRow(rset->getInt("trans_id"), rset->getInt("book_id"), rset->getInt("cust_id"), rset->getString("trans_date"),
-						  rset->getInt("payment_amount"), rset->getInt("books_num"), rset->getString("title"), rset->getString("author"));
+						  rset->getInt("books_num"), rset->getString("title"), rset->getString("author"));
 			}
 			vt.print(cout);
 		}
@@ -368,7 +414,7 @@ int customerOrdersHistory(int cust_id) {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "There are no open orders" << endl;
+			cout << endl << "This customer never invite something" << endl;
 		else {
 			VariadicTable<int, int, string, string, string>
 				vt({ "Order ID", "Book ID", "Order Date",
@@ -398,7 +444,7 @@ int shippingPrice(int order_id) {
 	try {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("CREATE TEMPORARY TABLE yad_two_store.table1 "
-			"SELECT books_num, price, ship_cost, book_weight, SUM(books_num * price + ship_cost + book_weight) AS sum_price "
+			"SELECT books_num, cust_price, ship_cost, book_weight, SUM(books_num * cust_price + ship_cost + book_weight) AS sum_price "
 			"FROM( "
 				"SELECT order_id, orders.book_id, cust_id, order_date, meth_id, ship_id, status_id, books_num, book_weight "
 				"FROM yad_two_store.orders "
@@ -421,7 +467,7 @@ int shippingPrice(int order_id) {
 		else {
 			VariadicTable<int, int, int, int, int> vt({ "book's number", "book's price", "ship cost", "book's weight", "total amount to pay" });
 			while (rset->next()) {
-				vt.addRow(rset->getInt("books_num"), rset->getInt("price"), rset->getInt("ship_cost"), rset->getInt("book_weight"), rset->getInt("sum_price"));
+				vt.addRow(rset->getInt("books_num"), rset->getInt("cust_price"), rset->getInt("ship_cost"), rset->getInt("book_weight"), rset->getInt("sum_price"));
 			}
 			vt.print(cout);
 		}
@@ -438,6 +484,94 @@ int shippingPrice(int order_id) {
 		cout << e.what();
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*========12========*/
+// split shipp
+int splittingShippOrder(int cust_id) {
+	Database& db = Database::getInstance();
+	try {
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT "
+			"order_id, book_id, cust_fname, order_date, meth_type, books_num, cust_price, dest_type, "
+			"price_without_ship, status_type, ship_cost, (price_without_ship + ship_cost)as total_amount_topay "
+			"FROM ( "
+				"SELECT "
+				"book_prices.book_id, order_id, cust_fname, order_date, meth_id, ship_id, "
+				"status_id, books_num, dest_id1, book_prices.cust_price, "
+				"(books_num * book_prices.cust_price) as price_without_ship "
+				"FROM( "
+					"SELECT order_id, book_id, cust_fname, order_date, meth_id, ship_id, status_id, books_num, dest_id1 "
+					"FROM( "
+						"SELECT * "
+						"FROM yad_two_store.orders "
+						"WHERE dest_id2 IS NOT NULL AND cust_id = '" + to_string(cust_id) + "' "
+					")AS bla "
+					"LEFT JOIN yad_two_store.customers ON customers.cust_id = bla.cust_id "
+				")AS blala "
+				"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = blala.book_id "
+			")AS bli "
+			"LEFT JOIN yad_two_store.shipping_status ON shipping_status.status_id = bli.status_id "
+			"LEFT JOIN yad_two_store.shipping_destination ON shipping_destination.dest_id = bli.dest_id1 "
+			"LEFT JOIN yad_two_store.method_options ON method_options.meth_id = bli.meth_id "
+			"LEFT JOIN yad_two_store.shipping_options ON shipping_options.ship_id = bli.ship_id "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+
+		if (rset->rowsCount() == 0)
+			cout << endl << "eror..." << endl;
+		else {
+			VariadicTable<int, int, string, string, string, int, int, string, int, string, int, int>
+				vt({ "Order ID", "Book ID", "customer name", "Order Date", "method type", "num of books",
+					"price", "destination", "price without shipping", "type", "ship cost", "total amount to pay" });
+			while (rset->next()) {
+				vt.addRow(rset->getInt("order_id"), rset->getInt("book_id"), rset->getString("cust_fname"), rset->getString("order_date"),
+					rset->getString("meth_type"), rset->getInt("books_num"), rset->getInt("cust_price"),
+					rset->getString("dest_type"), rset->getInt("price_without_ship"),
+					rset->getString("status_type"), rset->getInt("ship_cost"), rset->getInt("total_amount_topay"));
+			}
+			vt.print(cout);
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*--------------------to complete 12!!-------------*/
@@ -501,7 +635,7 @@ int sumAmountInSpecificMonth(string year, string month) {
 	
 	try {
 		Connection* con = db.getConnection();
-		PreparedStatement* pstmt = con->prepareStatement("SELECT SUM(books_num * price + 30 + book_weight) AS sum_price "
+		PreparedStatement* pstmt = con->prepareStatement("SELECT SUM(books_num * cust_price + 30 + book_weight) AS sum_price "
 			"FROM yad_two_store.orders "
 			"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = orders.book_id "
 			"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = orders.book_id "
@@ -538,7 +672,7 @@ int sumAmountPayedInBit(string year, string month) {
 
 	try {
 		Connection* con = db.getConnection();
-		PreparedStatement* pstmt = con->prepareStatement("SELECT sum(books_num * price) AS sum_price "
+		PreparedStatement* pstmt = con->prepareStatement("SELECT sum(books_num * cust_price) AS sum_price "
 			"FROM yad_two_store.transactions "
 			"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = transactions.book_id "
 			"WHERE (trans_date BETWEEN '" + year + "-''" + month + "-01' AND '" + year + "-''" + month + "-30') AND meth_id = 2; "
@@ -553,6 +687,362 @@ int sumAmountPayedInBit(string year, string month) {
 			rset->next();
 			cout << endl;
 			cout << "The store sum amount payed in Bit in  " << year << "-" << month << " is: " << rset->getInt("sum_price") << '\n';
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
+
+
+
+/*--------------------to complete 16!!-------------*/
+/*--------------------to complete 16!!-------------*/
+/*--------------------to complete 16!!-------------*/
+/*--------------------to complete 16!!-------------*/
+/*--------------------to complete 16!!-------------*/
+
+
+/*========17========*/
+// amount of shipping by Israel Post and amount of shipping by xpress at the last 12 months 
+int sumAmountShipping() {
+	Database& db = Database::getInstance();
+
+	try {
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT SUM(ship_id = 5) AS xprss, SUM(ship_id = 1) AS isrl "
+			"FROM yad_two_store.orders "
+			"WHERE (order_date BETWEEN '2019-09-09' AND '2020-09-09') AND (ship_id = 5 OR ship_id = 1); "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+
+		if (rset->rowsCount() == 0)
+			cout << endl << "Israel Post and xpress didn't shipp at the last year" << '\n';
+		else {
+			rset->next();
+			cout << '\n' << "The number of ships made by Xpress at the last year is: " << rset->getInt("xprss") << '\n'
+				 << "The number of ships made by Israel post at the last year is: " << rset->getInt("isrl") <<  '\n';
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
+
+
+/*--------------------to complete 18!!-------------*/
+/*--------------------to complete 18!!-------------*/
+/*--------------------to complete 18!!-------------*/
+/*--------------------to complete 18!!-------------*/
+/*--------------------to complete 18!!-------------*/
+
+
+
+/*--------------------to complete 19!!-------------*/
+/*--------------------to complete 19!!-------------*/
+/*--------------------to complete 19!!-------------*/
+/*--------------------to complete 19!!-------------*/
+
+
+
+
+/*========20========*/
+// customers didn't arrive to store to get the book they invited 
+int badCustomers() {
+	Database& db = Database::getInstance();
+
+	try {
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT "
+			"customers.cust_id, customers.cust_fname, customers.cust_lname, customers.phone "
+			"FROM ( "
+				"SELECT * "
+				"FROM yad_two_store.orders "
+				"WHERE dest_id = 1 AND status_id = 3 AND order_date < (NOW() - INTERVAL 2 WEEK) "
+			")AS bought "
+			"LEFT JOIN yad_two_store.customers ON customers.cust_id = bought.cust_id; "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+		if (rset->rowsCount() == 0)
+			cout << endl << "There are no open orders" << endl;
+		else {
+			VariadicTable<int, string, string, string> vt({ "cust ID", "first name", "last name", "phone" });
+			while (rset->next()) {
+				vt.addRow(rset->getInt("cust_id"), rset->getString("cust_fname"), rset->getString("cust_lname"), rset->getString("phone"));
+			}
+			vt.print(cout);
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
+
+
+
+/*========22========*/
+// how many books the store bought between given dates
+int storeBought(string sDate, string fDate) {
+	Database& db = Database::getInstance();
+
+	try {
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT "
+			"SUM(books_num) AS books_num, SUM(books_num * store_price + book_weight + ship_cost) as total_price "
+			"FROM yad_two_store.orders "
+			"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = orders.book_id "
+			"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = orders.book_id "
+			"LEFT JOIN yad_two_store.shipping_options ON shipping_options.ship_id = orders.ship_id "
+			"WHERE order_date BETWEEN '" + sDate + "' AND '" + fDate + "' AND cust_id = 100; "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+
+		if (rset->rowsCount() == 0)
+			cout << endl << "yad2 didn't bought between the given dates" << '\n';
+		else {
+			rset->next();
+			cout << '\n' << "The number of books yad2 store bought between the given dates is: " << rset->getInt("books_num") << '\n'
+				<< "yad2 paid about the stuff: " << rset->getInt("total_price") << " shekels" << '\n';
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
+
+
+/*========23========*/
+// total profit the store made in specific month 
+int storeProfit(string year, string month) {
+	Database& db = Database::getInstance();
+
+	try {	
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT "
+			"SUM(cust_price - store_price) AS store_profit "
+			"FROM yad_two_store.transactions "
+			"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = transactions.book_id "
+			"WHERE trans_date BETWEEN '" + year + "-''" + month + "-01' AND '" + year + "-''" + month + "-30'; "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+
+		if (rset->rowsCount() == 0)
+			cout << endl << "the profit of yad-2 at this month is 0 shekels" << '\n';
+		else {
+			rset->next();
+			cout << "the profit of yad2 in " << year << "-" << month << " is: " << rset->getInt("store_profit") << '\n';
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
+
+
+/*========24========*/
+//amount of transactions made every month
+int transactionsAmountEveryMonth(string year) {
+	Database& db = Database::getInstance();
+
+	try {	
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT ( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-01-01' AND '" + year + "-01-30') "
+			") AS january, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-02-01' AND '" + year + "-02-30') "
+			") AS february, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-03-01' AND '" + year + "-03-30') "
+			") AS march, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-04-01' AND '" + year + "-04-30') "
+			") AS april, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-05-01' AND '" + year + "-05-30') "
+			") AS may, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-06-01' AND '" + year + "-06-30') "
+			") AS june, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-07-01' AND '" + year + "-07-30') "
+			") AS jul, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-08-01' AND '" + year + "-08-30') "
+			") AS aug, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-09-01' AND '" + year + "-09-30') "
+			") AS sept, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-10-01' AND '" + year + "-10-30') "
+			") AS auktober, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-11-01' AND '" + year + "-11-30') "
+			") AS nov, "
+			"( "
+			"SELECT COUNT(*) "
+			"FROM yad_two_store.transactions "
+			"WHERE (trans_date BETWEEN '" + year + "-12-01' AND '" + year + "-12-30') "
+			") AS dece "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+		if (rset->rowsCount() == 0)
+			cout << endl << "There are no open orders" << endl;
+		else {
+			VariadicTable<string, string, string, string, string, string, string, string, string, string, string, string>
+				vt({ "January", "February", "March", "April", "May", "June", 
+					 "July", "August", "September", "Auctober", "November", "December" });
+			while (rset->next()) {
+				vt.addRow(rset->getString("january"), rset->getString("february"), rset->getString("march"), rset->getString("april"),
+						  rset->getString("may"), rset->getString("june"), rset->getString("jul"),
+						  rset->getString("aug"), rset->getString("sept"), rset->getString("auktober"),
+						  rset->getString("nov"), rset->getString("dece"));
+			}
+			vt.print(cout);
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
+
+
+/*========25========*/
+// salary of employ in specific month
+int employSalary(string year, string month, int emp_id) {
+	Database& db = Database::getInstance();
+
+	try {	//the sheilta is good! just to complete the rest.
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT "
+			"store_employees.emp_fname, store_employees.emp_lname, sales, hours_per_month, SUM(sales * 0.1 + hours_per_month * 25) AS bruto_salary "
+			"FROM ( "
+				"SELECT emp_id, SUM(books_num * cust_price) as sales "
+				"FROM yad_two_store.transactions "
+				"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = transactions.book_id "
+				"WHERE trans_date BETWEEN '" + year + "-''" + month + "-01' AND '" + year + "-''" + month + "-30' AND emp_id = '" + to_string(emp_id) + "' "
+			") AS sales_bet "
+			"LEFT JOIN yad_two_store.employee_salary ON employee_salary.emp_id = sales_bet.emp_id "
+			"LEFT JOIN yad_two_store.store_employees ON store_employees.emp_id = sales_bet.emp_id "
+			"WHERE sales_bet.emp_id = '" + to_string(emp_id) + "' AND year = '" + year + "' and months = '" + month + "'; "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+
+		if (rset->rowsCount() == 0)
+			cout << endl << "the profit of yad-2 at this month is 0 shekels" << '\n';
+		else {
+			rset->next();
+			cout << "The bruto salary of " << rset->getString("emp_fname") << " " << rset->getString("emp_lname")
+				<< " is: " << rset->getInt("bruto_salary") << " and he sold in amount of: " << rset->getInt("sales")
+				<< " shekels! and woked " << rset->getInt("hours_per_month") << " hours in this month!" << '\n';
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
+
+
+/*========26========*/
+// best employ in specific month (sold the most)
+int bestSellerEmploy(string year, string month) {
+	Database& db = Database::getInstance();
+
+	try {	
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT "
+			"store_employees.emp_id, emp_fname, emp_lname, emp_phone, transactions_number "
+			"FROM ( "
+				"SELECT emp_id, COUNT(*) AS transactions_number "
+				"FROM yad_two_store.transactions "
+				"WHERE trans_date BETWEEN '" + year + "-''" + month + "-01' AND '" + year + "-''" + month + "-30' "
+				"GROUP BY emp_id "
+				"ORDER BY transactions_number DESC "
+				"LIMIT 2 "
+			")AS best "
+			"LEFT JOIN yad_two_store.store_employees ON store_employees.emp_id = best.emp_id; "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+		if (rset->rowsCount() == 0)
+			cout << endl << "There are no open orders" << endl;
+		else {
+			VariadicTable<int, string, string, string, int> vt({ "Employ ID", "Employ name", "Employ last name", "Employ phone", "transactions number" });
+			while (rset->next()) {
+				vt.addRow(rset->getInt("emp_id"), rset->getString("emp_fname"), rset->getString("emp_lname"), 
+						  rset->getString("emp_phone"), rset->getInt("transactions_number"));
+			}
+			vt.print(cout);
 		}
 
 		delete pstmt;
