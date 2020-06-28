@@ -294,14 +294,6 @@ int topThreeCustomers() {
 }
 
 
-
-
-
-
-
-
-
-
 /*========8========*/
 // the book with the biggest amount of translations
 int mostTranslateBook() {
@@ -335,16 +327,6 @@ int mostTranslateBook() {
 		cout << e.what();
 	}
 }
-
-
-
-
-
-
-
-
-
-
 
 
 /*========9========*/
@@ -487,19 +469,6 @@ int shippingPrice(int order_id) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*========12========*/
 // split shipp
 int splittingShippOrder(int cust_id) {
@@ -558,27 +527,6 @@ int splittingShippOrder(int cust_id) {
 		cout << e.what();
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*--------------------to complete 12!!-------------*/
-/*--------------------to complete 12!!-------------*/
-/*--------------------to complete 12!!-------------*/
-/*--------------------to complete 12!!-------------*/
-/*--------------------to complete 12!!-------------*/
 
 
 /*========13========*/
@@ -742,18 +690,125 @@ int sumAmountShipping() {
 }
 
 
-/*--------------------to complete 18!!-------------*/
-/*--------------------to complete 18!!-------------*/
-/*--------------------to complete 18!!-------------*/
-/*--------------------to complete 18!!-------------*/
-/*--------------------to complete 18!!-------------*/
+/*========18========*/
+// same shipp different editions of the same book
+int shippDetailsBook() {
+	Database& db = Database::getInstance();
+	try {
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("CREATE TEMPORARY TABLE yad_two_store.tablee "
+			"SELECT order_id, group_concat(Distinct c.book_id SEPARATOR ',') AS books_ids, order_date, "
+			"GROUP_CONCAT(Distinct cust_fname SEPARATOR ',') AS cust_fname, "
+			"GROUP_CONCAT(Distinct cust_lname SEPARATOR ',') AS cust_lname, "
+			"CONCAT(cust_fname, ' ', cust_lname) AS full_name, "
+			"GROUP_CONCAT( books_num SEPARATOR ',') AS books_numbers, "
+			"GROUP_CONCAT(Distinct e.status_type SEPARATOR ',') AS status_type, "
+			"GROUP_CONCAT(Distinct f.ship_cost SEPARATOR ',') AS ship_cost, "
+			"GROUP_CONCAT(Distinct dest_id1 SEPARATOR ',') AS dest_id1, "
+			"GROUP_CONCAT(Distinct title SEPARATOR ',') AS titless, "
+			"GROUP_CONCAT(book_weight SEPARATOR ',') AS weightss, "
+			"GROUP_CONCAT(cust_price SEPARATOR ',') AS prices "
+			"FROM ( "
+				"SELECT distinct a.order_id, a.book_id, a.order_date, a.books_num, a.status_id, a.ship_id, a.dest_id1, a.cust_id "
+				"from yad_two_store.orders a, yad_two_store.orders b "
+				"where a.order_id = b.order_id AND a.book_id != b.book_id "
+				"GROUP BY a.book_id "
+			")AS bla "
+			"INNER JOIN yad_two_store.book_attributes c ON bla.book_id = c.book_id "
+			"INNER JOIN yad_two_store.book_prices d ON bla.book_id = d.book_id "
+			"INNER JOIN yad_two_store.shipping_status e ON bla.status_id = e.status_id "
+			"INNER JOIN yad_two_store.shipping_options f ON bla.ship_id = f.ship_id "
+			"INNER JOIN yad_two_store.customers g ON bla.cust_id = g.cust_id "
+			"group by order_id "
+		);
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+
+
+		pstmt = con->prepareStatement("SELECT * "
+			"FROM yad_two_store.tablee "
+			"where (CHAR_LENGTH(books_ids) - CHAR_LENGTH(REPLACE(books_ids, ',', '')) + 1) != (CHAR_LENGTH(titless) - CHAR_LENGTH(REPLACE(titless, ',', '')) + 1); "
+		);
+		rset = pstmt->executeQuery();
+		rset->beforeFirst();
+
+		if (rset->rowsCount() == 0)
+			cout << endl << "there wasn't shipps like this" << endl;
+		else {
+			VariadicTable<int, string, string, string, string, string, string, string, string, string, string>
+				vt({ "order_id", "books_ids", "order_date", "full_name", "books_numbers", "status_type", "ship_cost", "dest_id1", "titless", "weightss", "prices" });
+			while (rset->next()) {
+				vt.addRow(rset->getInt("order_id"), rset->getString("books_ids"), rset->getString("order_date"), rset->getString("full_name"),
+						  rset->getString("books_numbers"), rset->getString("status_type"),
+						  rset->getString("ship_cost"), rset->getString("dest_id1"), rset->getString("titless"),
+						  rset->getString("weightss"), rset->getString("prices"));
+			}
+			vt.print(cout);
+		}
+
+		pstmt = con->prepareStatement("DROP TEMPORARY TABLE yad_two_store.tablee; ");
+		rset = pstmt->executeQuery();
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
 
 
 
-/*--------------------to complete 19!!-------------*/
-/*--------------------to complete 19!!-------------*/
-/*--------------------to complete 19!!-------------*/
-/*--------------------to complete 19!!-------------*/
+
+/*========19========*/
+// customers didn't buy at the last 24 months 
+int oldCustomers() {
+	Database& db = Database::getInstance();
+
+	try {
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT "
+			"customers.cust_id, customers.cust_fname, customers.cust_lname, customers.phone, trans_date, books_num, title, author "
+			"FROM( "
+				"SELECT * "
+				"FROM( "
+					"SELECT * "
+					"FROM yad_two_store.transactions "
+					"ORDER BY trans_date DESC "
+					"LIMIT 100 "
+				")as bla "
+				"GROUP BY cust_id "
+			")as lala "
+			"left join yad_two_store.customers on customers.cust_id = lala.cust_id "
+			"left join yad_two_store.book_attributes on book_attributes.book_id = lala.book_id "
+			"WHERE trans_date < (NOW() - INTERVAL 2 year); "
+		);
+
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+		if (rset->rowsCount() == 0)
+			cout << endl << "There are no open orders" << endl;
+		else {
+			VariadicTable<int, string, string, string, string, int, string, string> 
+				vt({ "cust ID", "cust name", "last name", "phone", "last purchase", "book's number", "book's name", "written by" });
+			while (rset->next()) {
+				vt.addRow(rset->getInt("cust_id"), rset->getString("cust_fname"), rset->getString("cust_lname"), rset->getString("phone"),
+						  rset->getString("trans_date"), rset->getInt("books_num"), rset->getString("title"), rset->getString("author"));
+			}
+			vt.print(cout);
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
 
 
 

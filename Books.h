@@ -28,8 +28,8 @@ int sumAmountPayedInBit(string year, string month);
 // 16 - 20
 /*-----to complete 16!!-------*/
 int sumAmountShipping();
-/*-----to complete 18!!-------*/
-/*-----to complete 19!!-------*/
+int shippDetailsBook();
+int oldCustomers();
 int badCustomers();
 
 // 21 - 26

@@ -174,6 +174,15 @@ int main(int argc, const char* argv[]) {
 			sumAmountShipping();
 			break;
 
+			case 18:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			shippDetailsBook();
+			break;
+
+		case 19:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			oldCustomers();
+			break;
 
 		case 20:
 			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
