@@ -9,8 +9,7 @@ using namespace std;
 using namespace sql;
 
 
-//checks if the format of a string is yyyy-mm-tt, returns true if so and false otherwise
-bool validateDateFormat(string date) {
+bool DateValidator(string date) {
 	if (date[4] != '-' || date[7] != '-' || date.size() != 10)
 		return false;
 
