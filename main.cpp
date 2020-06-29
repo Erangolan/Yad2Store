@@ -19,28 +19,34 @@ using namespace sql;
 
 void printMenu() {
 	cout << endl;
-	cout << "Enter the number of the action you wish to take" << endl;
-	cout << "1. Show all available books in inventory" << endl;
-	cout << "2. Show all open orders" << endl;
-	cout << "3. Show all customers who made a purchase" << endl;
-	cout << "4. Show all suppliers" << endl;
-	cout << "5. Show all purchases between given dates" << endl;
-	cout << "6. Show all books available for global sale" << endl;
-	cout << "7. Check if a given book is available in the inventory" << endl;
-	cout << "8. Show all suppliers of a given book" << endl;
-	cout << "9. How many books from a certain type where sold from since a given date" << endl;
-	cout << "10. How many books and different book types were purchased by a certain customer since given date" << endl;
-	cout << "11. Show the details of the customer who bought the most since a given date" << endl;
-	cout << "12. Show the details of the supplier who sold us the most books since a given date" << endl;
-	cout << "13. Amount of orders made and how many books ordered between given dates" << endl;
-	cout << "14. Amount of orders made and how many books ordered between given dates that were made by customers and were sold" << endl;
-	cout << "15. Show the total discount a customer received since a certain date" << endl;
-	cout << "16. Sum revenue in Q1, Q2, Q3, Q4 in a given year" << endl;
-	cout << "17. Show how many customers were added since a given date" << endl;
-	cout << "18. Total amount paid to a given supplier between given dates" << endl;
-	cout << "19. Total amount a given seller earned between given dates" << endl;
-	cout << "20. Show the top 10 most sold books between given dates" << endl;
-	cout << "99. Exit" << endl;
+	cout << "Please insert the number of the action you want" << endl;
+	cout << "1. Check if a book exist" << endl;
+	cout << "2. The oldest customer" << endl;
+	cout << "3. The oldest book" << endl;
+	cout << "4. Order list" << endl;
+	cout << "5. Number of book Y sold by yad2" << endl;
+	cout << "6. The most reader author between dates" << endl;
+	cout << "7. Top 3 customers who bought the most" << endl;
+	cout << "8. The book with the most translations" << endl;
+	cout << "9. Purch history of customer X" << endl;
+	cout << "10. Orders history of specific customer" << endl;
+	cout << "11. Shipping cost" << endl;
+	cout << "12. Splitting shipp" << endl;
+	cout << "13. Currently status of specific shipp" << endl;
+	cout << "14. Sum of shipps made by Xpress in specific month" << endl;
+	cout << "15. Sum of money transfered to yad2 by Bit App" << endl;
+	cout << "16. /*---------------to complete-----------*/" << endl;
+	cout << "17. Number of shipps made by Israel post and Xpress at the last year" << endl;
+	cout << "18. Details about all ships that included 2 editions of the same book" << endl;
+	cout << "19. Details about customers that didn't buy at the last 24 months" << endl;
+	cout << "20. Customers orders that didn't arrive to take their books" << endl;
+	cout << "21. /*-----to complete 21!!-------*/" << '\n';
+	cout << "22. Number of books yad2 bought between dates and their sum amount" << '\n';
+	cout << "23. The profit of yad2 in specific month" << '\n';
+	cout << "24. Average monthly cross-sectional transactions" << '\n';
+	cout << "25. Bruto salary of empoleey" << '\n';
+	cout << "26. Employee Z's gross salary for a particular month" << '\n';
+	cout << "0. Exit" << endl;
 	cout << endl;
 }
 
@@ -236,14 +242,14 @@ int main(int argc, const char* argv[]) {
 			bestSellerEmploy(sDate, fDate);
 			break;
 
-		case 99:
+		case 0:
 			return 1;
 
 		default:
 			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
-			cout << "Not a valid input" << endl;
+			cout << "Invalid input" << endl;
 			break;
 		}
-		waitToContinue();
+		cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
 	}
 }
