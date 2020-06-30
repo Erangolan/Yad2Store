@@ -17,7 +17,7 @@ using namespace sql;
 
 //NAMESPACES;
 
-void printMenu() {
+void otionsBar() {
 	cout << '\n' << "Please insert the number of the action you want" << '\n';
 	cout << "1. Check if a book exist" << '\n';
 	cout << "2. The oldest customer" << '\n';
@@ -39,7 +39,7 @@ void printMenu() {
 	cout << "18. Details about all ships that included 2 editions of the same book" << '\n';
 	cout << "19. Details about customers that didn't buy at the last 24 months" << '\n';
 	cout << "20. Customers orders that didn't arrive to take their books" << '\n';
-	cout << "21. /*-----to complete 21!!-------*/" << '\n';
+	cout << "21. Last year's transactions with profit higher than avg" << '\n';
 	cout << "22. Number of books yad2 bought between dates and their sum amount" << '\n';
 	cout << "23. The profit of yad2 in specific month" << '\n';
 	cout << "24. Average monthly cross-sectional transactions" << '\n';
@@ -54,7 +54,7 @@ int main(int argc, const char* argv[]) {
 	int userChoise, cust_id, order_id;
 
 	while (1) {
-		printMenu();
+		otionsBar();
 		cin >> userChoise;
 		switch (userChoise) {
 		case 1:
