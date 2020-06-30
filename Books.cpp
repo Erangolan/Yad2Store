@@ -41,12 +41,11 @@ int showStorage(string title) {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "The book does not exist in our storage" << endl;
+			cout << '\n' << "The book does not exist in our storage" << '\n';
 		else {
 			rset->next();
-			cout << endl;
-			cout << "The book: " << rset->getString("title") << ", by " << rset->getString("author") << ", has " 
-				<< rset->getUInt("store_amount") << " copies in store and " << rset->getUInt("storage_amount") << " copies in the storage" << endl;
+			cout << '\n' << "The book: " << rset->getString("title") << ", by " << rset->getString("author") << ", has "
+				<< rset->getUInt("store_amount") << " copies in store and " << rset->getUInt("storage_amount") << " copies in the storage" << '\n';
 		}
 		delete pstmt;
 		delete rset;
@@ -73,11 +72,10 @@ int theOldestCustomer() {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "The book does not exist in our storage" << endl;
+			cout << '\n' << "The book does not exist in our storage" << '\n';
 		else {
 			rset->next();
-			cout << endl;
-			cout << "The Oldest customer is: " << rset->getString("cust_fname") << " " << rset->getString("cust_lname") << ", his purchase was in "
+			cout << '\n' << "The Oldest customer is: " << rset->getString("cust_fname") << " " << rset->getString("cust_lname") << ", his purchase was in "
 				<< rset->getString("oldest_date") << ", and he bought the book: " << rset->getString("title") << " by " << rset->getString("author") << '\n';
 		}
 		delete pstmt;
@@ -117,11 +115,10 @@ int theOldestBookInStore() {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "The book does not exist in our storage" << endl;
+			cout << '\n' << "The book does not exist in our storage" << '\n';
 		else {
 			rset->next();
-			cout << endl;
-			cout << "The book that has the most time in stock is: " << rset->getString("title") <<
+			cout << '\n' << "The book that has the most time in stock is: " << rset->getString("title") <<
 				" by " << rset->getString("author") << ", and the last purchase was it was in "
 				<< rset->getString("trans_date") << '\n';
 		}
@@ -157,7 +154,7 @@ int orderList() {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "All orders already arrived!" << endl;
+			cout << '\n' << "All orders already arrived!" << '\n';
 		else {
 			VariadicTable<int, string, string, int, string, string, string, string> 
 				vt({ "order ID", "cust Fname", "cust Lname", "book ID", "Title", "Order Date", "payed by", "shipp by" });
@@ -196,11 +193,10 @@ int orderList(string title) {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "The book does not exist in our storage" << endl;
+			cout << '\n' << "The book does not exist in our storage" << '\n';
 		else {
 			rset->next();
-			cout << endl;
-			cout << "The book " << title << " by " << rset->getString("author") 
+			cout << '\n' << "The book " << title << " by " << rset->getString("author")
 				 << ", was salled " << rset->getString("sales_num") << " times in this store" << '\n';
 		}
 
@@ -236,11 +232,10 @@ int mostPopularAuthor(string sDate, string fDate) {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "The book does not exist in our storage" << endl;
+			cout << '\n' << "The book does not exist in our storage" << '\n';
 		else {
 			rset->next();
-			cout << endl;
-			cout << "The most reader author between " << sDate << " and " << fDate << " is: " << rset->getString("author")
+			cout << '\n' << "The most reader author between " << sDate << " and " << fDate << " is: " << rset->getString("author")
 				<< ", and " << rset->getDouble("num_of_sales") << " people read his books" << '\n';
 		}
 
@@ -273,7 +268,7 @@ int topThreeCustomers() {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "There are no open orders" << endl;
+			cout << '\n' << "There are no open orders" << '\n';
 		else {
 			VariadicTable<int, string, string, int> vt({ "cust ID", "first name", "last name", "amount of books bought" });
 			while (rset->next()) {
@@ -309,11 +304,10 @@ int mostTranslateBook() {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "error..." << endl;
+			cout << '\n' << "error..." << '\n';
 		else {
 			rset->next();
-			cout << endl;
-			cout << "The book with the biggest amount of translations is: " << rset->getString("title") << ", by: " << rset->getString("author")
+			cout << '\n' << "The book with the biggest amount of translations is: " << rset->getString("title") << ", by: " << rset->getString("author")
 				<< ". and was translated to " << rset->getString("translate_number") << " languages." << '\n';
 		}
 
@@ -348,7 +342,7 @@ int customerSalesHistory(int cust_id) {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "There are no open orders" << endl;
+			cout << '\n' << "There are no open orders" << '\n';
 		else {
 			VariadicTable<int, int, int, string, int, string, string> 
 				vt({ "Transaction ID", "Book ID", "Customer ID", "Transaction Date",
@@ -395,7 +389,7 @@ int customerOrdersHistory(int cust_id) {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "This customer never invite something" << endl;
+			cout << '\n' << "This customer never invite something" << '\n';
 		else {
 			VariadicTable<int, int, string, string, string>
 				vt({ "Order ID", "Book ID", "Order Date",
@@ -444,7 +438,7 @@ int shippingPrice(int order_id) {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "error on calculation ship price" << endl;
+			cout << '\n' << "error on calculation ship price" << '\n';
 		else {
 			VariadicTable<int, int, int, int, int> vt({ "book's number", "book's price", "ship cost", "book's weight", "total amount to pay" });
 			while (rset->next()) {
@@ -503,7 +497,7 @@ int splittingShippOrder(int cust_id) {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "eror..." << endl;
+			cout << '\n' << "This customer didn't split any of his ships" << '\n';
 		else {
 			VariadicTable<int, int, string, string, string, int, int, string, int, string, int, int>
 				vt({ "Order ID", "Book ID", "customer name", "Order Date", "method type", "num of books",
@@ -551,7 +545,7 @@ int specificOrderStatus(int order_id) {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "eror..." << endl;
+			cout << '\n' << "eror..." << '\n';
 		else {
 			VariadicTable<int, int, string, int, string, string, string, string, string>
 				vt({ "Order ID", "Book ID", "Title", "customer ID", "customer name", "Order Date", "method type", "ship by", "status" });
@@ -593,11 +587,10 @@ int sumAmountInSpecificMonth(string year, string month) {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "xpress didn't sent anithing in this month" << '\n';
+			cout << '\n' << "xpress didn't sent anithing in this month" << '\n';
 		else {
 			rset->next();
-			cout << endl;
-			cout << "xspress sum amount in  " << year << "-" << month << " is: " << rset->getInt("sum_price") << '\n';
+			cout << '\n' << "xspress sum amount in  " << year << "-" << month << " is: " << rset->getInt("sum_price") << '\n';
 		}
 
 		delete pstmt;
@@ -629,11 +622,10 @@ int sumAmountPayedInBit(string year, string month) {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "non'e of the customers payed in Bit at this month" << '\n';
+			cout << '\n' << "non'e of the customers payed in Bit at this month" << '\n';
 		else {
 			rset->next();
-			cout << endl;
-			cout << "The store sum amount payed in Bit in  " << year << "-" << month << " is: " << rset->getInt("sum_price") << '\n';
+			cout << '\n' << "The store sum amount payed in Bit in  " << year << "-" << month << " is: " << rset->getInt("sum_price") << '\n';
 		}
 
 		delete pstmt;
@@ -647,12 +639,57 @@ int sumAmountPayedInBit(string year, string month) {
 }
 
 
+/*========16========*/
+// transactions higher from average
+int transactionsProfitHigherThanAvg() {
+	Database& db = Database::getInstance();
+	try {
+		Connection* con = db.getConnection();
+		PreparedStatement* pstmt = con->prepareStatement("SELECT trans_id, title, cust_fname, al.trans_date, meth_type, al.books_num, emp_fname, profit "
+			"FROM yad_two_store.book_attributes AS a "
+			"JOIN( "
+				"SELECT trans_id, al.book_id, al.cust_id, al.trans_date, al.meth_id, al.books_num, al.emp_id, (books_num * cust_price) - (books_num * store_price)as profit "
+				"FROM yad_two_store.transactions AS al "
+				"left join yad_two_store.book_prices on book_prices.book_id = al.book_id "
+				"WHERE trans_date BETWEEN(NOW() - INTERVAL 1 year) AND NOW() "
+			") AS al ON al.book_id = a.book_id "
+			"JOIN( "
+				"SELECT AVG(c.profit) AS Average "
+				"FROM( "
+					"SELECT(books_num * cust_price) - (books_num * store_price)as profit "
+					"FROM yad_two_store.transactions AS al "
+					"left join yad_two_store.book_prices on book_prices.book_id = al.book_id "
+					"WHERE trans_date BETWEEN(NOW() - INTERVAL 1 year) AND NOW() "
+				") AS c "
+			") AS av ON al.profit > av.Average "
+			"left join yad_two_store.customers on customers.cust_id = al.cust_id "
+			"left join yad_two_store.method_options on method_options.meth_id = al.meth_id "
+			"left join yad_two_store.store_employees on store_employees.emp_id = al.emp_id "
+		);
 
-/*--------------------to complete 16!!-------------*/
-/*--------------------to complete 16!!-------------*/
-/*--------------------to complete 16!!-------------*/
-/*--------------------to complete 16!!-------------*/
-/*--------------------to complete 16!!-------------*/
+		ResultSet* rset = pstmt->executeQuery();
+		rset->beforeFirst();
+		if (rset->rowsCount() == 0)
+			cout << '\n' << "This customer never invite something" << '\n';
+		else {
+			VariadicTable<int, string, string, string, string,int, string, int>
+				vt({ "Transactions ID", "Book name", "Customer name", "Date", "Method type", "Books number", "emploee", "Profit" });
+			while (rset->next()) {
+				vt.addRow(rset->getInt("trans_id"), rset->getString("title"),rset->getString("cust_fname"), rset->getString("trans_date"),
+					rset->getString("meth_type"), rset->getInt("books_num"), rset->getString("emp_fname"), rset->getInt("profit"));
+			}
+			vt.print(cout);
+		}
+
+		delete pstmt;
+		delete rset;
+		delete con;
+		return 0;
+	}
+	catch (SQLException& e) {
+		cout << e.what();
+	}
+}
 
 
 /*========17========*/
@@ -671,7 +708,7 @@ int sumAmountShipping() {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "Israel Post and xpress didn't shipp at the last year" << '\n';
+			cout << '\n' << "Israel Post and xpress didn't shipp at the last year" << '\n';
 		else {
 			rset->next();
 			cout << '\n' << "The number of ships made by Xpress at the last year is: " << rset->getInt("xprss") << '\n'
@@ -700,7 +737,7 @@ int shippDetailsBook() {
 			"GROUP_CONCAT(Distinct cust_fname SEPARATOR ',') AS cust_fname, "
 			"GROUP_CONCAT(Distinct cust_lname SEPARATOR ',') AS cust_lname, "
 			"CONCAT(cust_fname, ' ', cust_lname) AS full_name, "
-			"GROUP_CONCAT( books_num SEPARATOR ',') AS books_numbers, "
+			"GROUP_CONCAT(books_num SEPARATOR ',') AS books_numbers, "
 			"GROUP_CONCAT(Distinct e.status_type SEPARATOR ',') AS status_type, "
 			"GROUP_CONCAT(Distinct f.ship_cost SEPARATOR ',') AS ship_cost, "
 			"GROUP_CONCAT(Distinct dest_id1 SEPARATOR ',') AS dest_id1, "
@@ -732,7 +769,7 @@ int shippDetailsBook() {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "there wasn't shipps like this" << endl;
+			cout << '\n' << "there wasn't shipps like this" << '\n';
 		else {
 			VariadicTable<int, string, string, string, string, string, string, string, string, string, string>
 				vt({ "order_id", "books_ids", "order_date", "full_name", "books_numbers", "status_type", "ship_cost", "dest_id1", "titless", "weightss", "prices" });
@@ -788,7 +825,7 @@ int oldCustomers() {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "There are no open orders" << endl;
+			cout << '\n' << "There are no open orders" << '\n';
 		else {
 			VariadicTable<int, string, string, string, string, int, string, string> 
 				vt({ "cust ID", "cust name", "last name", "phone", "last purchase", "book's number", "book's name", "written by" });
@@ -832,7 +869,7 @@ int badCustomers() {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "There are no open orders" << endl;
+			cout << '\n' << "There are no open orders" << '\n';
 		else {
 			VariadicTable<int, string, string, string> vt({ "cust ID", "first name", "last name", "phone" });
 			while (rset->next()) {
@@ -873,7 +910,7 @@ int storeBought(string sDate, string fDate) {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "yad2 didn't bought between the given dates" << '\n';
+			cout << '\n' << "yad2 didn't bought between the given dates" << '\n';
 		else {
 			rset->next();
 			cout << '\n' << "The number of books yad2 store bought between the given dates is: " << rset->getInt("books_num") << '\n'
@@ -909,7 +946,7 @@ int storeProfit(string year, string month) {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "the profit of yad-2 at this month is 0 shekels" << '\n';
+			cout << '\n' << "the profit of yad-2 at this month is 0 shekels" << '\n';
 		else {
 			rset->next();
 			cout << "the profit of yad2 in " << year << "-" << month << " is: " << rset->getInt("store_profit") << '\n';
@@ -998,7 +1035,7 @@ int transactionsAmountEveryMonth(string year) {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "There are no open orders" << endl;
+			cout << '\n' << "There are no open orders" << '\n';
 		else {
 			VariadicTable<string, string, string, string, string, string, string, string, string, string, string, string>
 				vt({ "January", "February", "March", "April", "May", "June", 
@@ -1047,7 +1084,7 @@ int employSalary(string year, string month, int emp_id) {
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
-			cout << endl << "the profit of yad-2 at this month is 0 shekels" << '\n';
+			cout << '\n' << "the profit of yad-2 at this month is 0 shekels" << '\n';
 		else {
 			rset->next();
 			cout << "The bruto salary of " << rset->getString("emp_fname") << " " << rset->getString("emp_lname")
@@ -1089,7 +1126,7 @@ int bestSellerEmploy(string year, string month) {
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 		if (rset->rowsCount() == 0)
-			cout << endl << "There are no open orders" << endl;
+			cout << '\n' << "There are no open orders" << '\n';
 		else {
 			VariadicTable<int, string, string, string, int> vt({ "Employ ID", "Employ name", "Employ last name", "Employ phone", "transactions number" });
 			while (rset->next()) {

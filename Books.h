@@ -26,7 +26,7 @@ int sumAmountInSpecificMonth(string year, string month);
 int sumAmountPayedInBit(string year, string month);
 
 // 16 - 20
-/*-----to complete 16!!-------*/
+int transactionsProfitHigherThanAvg();
 int sumAmountShipping();
 int shippDetailsBook();
 int oldCustomers();
