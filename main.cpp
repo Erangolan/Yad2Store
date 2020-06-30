@@ -4,18 +4,16 @@
 #include <cppconn/driver.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
-//#include <boost/date_time/posix_time/posix_time.hpp>
+#include <sstream> 
 
 #include <string>
 #include <limits>
 #include "Books.h"
 #include "Database.h"
 
-//#define NAMESPACES using namespace boost::posix_time;using namespace boost::gregorian;
 using namespace std;
 using namespace sql;
 
-//NAMESPACES;
 
 void otionsBar() {
 	cout << '\n' << "Please insert the number of the action you want" << '\n';
@@ -46,6 +44,22 @@ void otionsBar() {
 	cout << "25. Bruto salary of empoleey" << '\n';
 	cout << "26. Employee Z's gross salary for a particular month" << '\n';
 	cout << "0. Exit" << '\n' << '\n';
+}
+
+bool dateValidator(string date) {
+	if (date[4] != '-' || date[7] != '-' || date.size() != 10)
+		return false;
+
+	int year = 0, month = 0, day = 0;
+	string delimiter = "-";
+	string token1 = date.substr(0, 4), token2 = date.substr(date.find(delimiter) + 1, date.find(delimiter) - 2), token3 = date.substr(8, 9);
+	stringstream geek1(token1), geek2(token2), geek3(token3);
+	geek1 >> year, geek2 >> month, geek3 >> day;
+
+	if (month < 0 || month > 12 || day < 0 || day > 30 || year < 0)
+		return false;
+
+	return true;
 }
 
 
@@ -92,6 +106,10 @@ int main(int argc, const char* argv[]) {
 			getline(cin, sDate);
 			cout << "please insert final date" << '\n';
 			getline(cin, fDate);
+			if (!dateValidator(sDate) || !dateValidator(fDate)) {
+				cout << "please insert date in format yyyy-mm-tt. for example 2020-02-12" << endl;
+				break;
+			}
 			mostPopularAuthor(sDate, fDate);
 			break;
 
@@ -194,9 +212,12 @@ int main(int argc, const char* argv[]) {
 			getline(cin, sDate);
 			cout << "please insert end date" << '\n';
 			getline(cin, fDate);
+			if (!dateValidator(sDate) || !dateValidator(fDate)) {
+				cout << "please insert date in format yyyy-mm-tt. for example 2020-02-12" << endl;
+				break;
+			}
 			storeBought(sDate, fDate);
 			break;
-
 
 		case 23:
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
