@@ -1082,7 +1082,7 @@ int transactionsAmountEveryMonth(string year) {
 int employSalary(string year, string month, int emp_id) {
 	Database& db = Database::getInstance();
 
-	try {	//the sheilta is good! just to complete the rest.
+	try {	
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT "
 			"store_employees.emp_fname, store_employees.emp_lname, sales, hours_per_month, SUM(sales * 0.1 + hours_per_month * 25) AS bruto_salary "
