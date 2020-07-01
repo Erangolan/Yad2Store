@@ -47,7 +47,7 @@ int theOldestCustomer() {
 	try {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT "
-			"MIN(trans_date) AS 'oldest_date', customers.cust_fname, customers.cust_lname, book_attributes.title, book_attributes.author "
+			"MIN(trans_date) AS 'oldest_date', CONCAT(cust_fname, ' ', cust_lname) AS full_name, book_attributes.title, book_attributes.author "
 			"FROM yad_two_store.transactions "
 			"LEFT JOIN yad_two_store.customers ON customers.cust_id = transactions.cust_id "
 			"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = transactions.book_id; "
@@ -59,7 +59,7 @@ int theOldestCustomer() {
 			cout << '\n' << "The book does not exist in our storage" << '\n';
 		else {
 			rset->next();
-			cout << '\n' << "The Oldest customer is: " << rset->getString("cust_fname") << " " << rset->getString("cust_lname") << ", his purchase was in "
+			cout << '\n' << "The Oldest customer is: " << rset->getString("full_name") << ", his first purchase was in "
 				<< rset->getString("oldest_date") << ", and he bought the book: " << rset->getString("title") << " by " << rset->getString("author") << '\n';
 		}
 		delete pstmt;
@@ -103,7 +103,7 @@ int theOldestBookInStore() {
 		else {
 			rset->next();
 			cout << '\n' << "The book that has the most time in stock is: " << rset->getString("title") <<
-				" by " << rset->getString("author") << ", and the last purchase was it was in "
+				" by " << rset->getString("author") << ", and the last purchase of the book was in "
 				<< rset->getString("trans_date") << '\n';
 		}
 		delete pstmt;
@@ -124,7 +124,7 @@ int orderList() {
 	try {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT "
-			"order_details.order_id, customers.cust_fname, customers.cust_lname, order_details.book_id, title, "
+			"order_details.order_id, CONCAT(cust_fname, ' ', cust_lname) AS full_name, order_details.book_id, title, "
 			"order_date, method_options.meth_type, shipping_options.ship_type "
 			"FROM yad_two_store.orders "
 			"LEFT JOIN yad_two_store.order_details ON order_details.order_id = orders.order_id "
@@ -142,16 +142,14 @@ int orderList() {
 		if (rset->rowsCount() == 0)
 			cout << '\n' << "All orders already arrived!" << '\n';
 		else {
-			VariadicTable<int, string, string, int, string, string, string, string> 
-				vt({ "order ID", "cust Fname", "cust Lname", "book ID", "Title", "Order Date", "payed by", "shipp by" });
+			VariadicTable<int, string, int, string, string, string, string> 
+				vt({ "Order ID", "Customer name", "Book ID", "Title", "Order Date", "Payed by", "Shipp by" });
 			
 			while (rset->next()) {
-				vt.addRow(rset->getInt("order_id"), rset->getString("cust_fname"), rset->getString("cust_lname"),
-						  rset->getInt("book_id"), rset->getString("title"), rset->getString("order_date"),
-						  rset->getString("meth_type"), rset->getString("ship_type"));
+				vt.addRow(rset->getInt("order_id"), rset->getString("full_name"), rset->getInt("book_id"), rset->getString("title"), 
+						  rset->getString("order_date"), rset->getString("meth_type"), rset->getString("ship_type"));
 			}
 			vt.print(cout);
-			
 		}
 		delete pstmt;
 		delete rset;
@@ -243,7 +241,7 @@ int topThreeCustomers() {
 	try {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT "
-			"transactions.cust_id, customers.cust_fname, customers.cust_lname, COUNT(transactions.cust_id) AS buy_amount "
+			"transactions.cust_id, CONCAT(cust_fname, ' ', cust_lname) AS full_name, COUNT(transactions.cust_id) AS buy_amount "
 			"FROM yad_two_store.transactions "
 			"LEFT JOIN yad_two_store.customers ON customers.cust_id = transactions.cust_id "
 			"GROUP BY cust_id "
@@ -256,9 +254,9 @@ int topThreeCustomers() {
 		if (rset->rowsCount() == 0)
 			cout << '\n' << "There are no open orders" << '\n';
 		else {
-			VariadicTable<int, string, string, int> vt({ "cust ID", "first name", "last name", "amount of books bought" });
+			VariadicTable<int, string, int> vt({ "Cust ID", "Customer name", "amount of books bought" });
 			while (rset->next()) {
-				vt.addRow(rset->getInt("cust_id"), rset->getString("cust_fname"), rset->getString("cust_lname"), rset->getInt("buy_amount"));
+				vt.addRow(rset->getInt("cust_id"), rset->getString("full_name"), rset->getInt("buy_amount"));
 			}
 			vt.print(cout);
 		}
@@ -315,13 +313,14 @@ int customerSalesHistory(int cust_id) {
 	try {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT "
-			"trans_id, book_attributes.book_id, cust_id, trans_date, books_num, title, author "
+			"trans_id, book_attributes.book_id, cust_id, trans_date, books_num, title, author, cust_price, (cust_price * books_num) AS sum_cost "
 			"FROM ( "
 				"SELECT * "
 				"FROM yad_two_store.transactions "
 				"WHERE cust_id = '" + to_string(cust_id) + "' "
 			") AS cust_bought "
 			"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = cust_bought.book_id "
+			"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = cust_bought.book_id "
 			"ORDER BY trans_date DESC; "
 		);
 
@@ -330,12 +329,13 @@ int customerSalesHistory(int cust_id) {
 		if (rset->rowsCount() == 0)
 			cout << '\n' << "There are no open orders" << '\n';
 		else {
-			VariadicTable<int, int, int, string, int, string, string> 
+			VariadicTable<int, int, int, string, int, string, string, int, int> 
 				vt({ "Transaction ID", "Book ID", "Customer ID", "Transaction Date",
-					 "Number of books", "Title", "Author" });
+					 "Number of books", "Title", "Author", "Book's price", "transaction's sum" });
 			while (rset->next()) {
-				vt.addRow(rset->getInt("trans_id"), rset->getInt("book_id"), rset->getInt("cust_id"), rset->getString("trans_date"),
-						  rset->getInt("books_num"), rset->getString("title"), rset->getString("author"));
+				vt.addRow(rset->getInt("trans_id"), rset->getInt("book_id"), rset->getInt("cust_id"), 
+					rset->getString("trans_date"), rset->getInt("books_num"), rset->getString("title"), 
+					rset->getString("author"), rset->getInt("cust_price"), rset->getInt("sum_cost"));
 			}
 			vt.print(cout);
 		}
@@ -361,16 +361,17 @@ int customerOrdersHistory(int cust_id) {
 			"FROM( "
 				"SELECT order_id, store_items.book_id, amount, order_date, book_ids, title, author "
 				"FROM( "
-					"SELECT order_details.order_id, order_details.book_id, order_date, GROUP_CONCAT(distinct(order_details.book_id))as book_ids, GROUP_CONCAT(Distinct title SEPARATOR ', ') AS title, GROUP_CONCAT(Distinct author SEPARATOR ', ') AS author "
+					"SELECT order_details.order_id, order_details.book_id, order_date, GROUP_CONCAT(distinct(order_details.book_id))as book_ids, "
+					"GROUP_CONCAT(Distinct title SEPARATOR ', ') AS title, GROUP_CONCAT(Distinct author SEPARATOR ', ') AS author "
 					"FROM yad_two_store.orders " 
 					"LEFT JOIN yad_two_store.order_details ON order_details.order_id = orders.order_id "
 					"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = order_details.book_id "
 					"WHERE cust_id = '" + to_string(cust_id) + "' "
 					"GROUP BY orders.order_date "
-				") AS cust_bought "
+				" ) AS cust_bought "
 				"LEFT JOIN yad_two_store.store_items ON store_items.book_id = cust_bought.book_id "
 				"WHERE amount > 0 "
-			")AS in_store "
+			")AS in_store  "
 		);
 
 		ResultSet* rset = pstmt->executeQuery();
@@ -378,10 +379,10 @@ int customerOrdersHistory(int cust_id) {
 		if (rset->rowsCount() == 0)
 			cout << '\n' << "This customer never invite something" << '\n';
 		else {
-			VariadicTable<int, int, string, string, string>
+			VariadicTable<int, string, string, string, string>
 				vt({ "Order ID", "Book ID", "Book name", "Title", "Author", "Order Date" });
 			while (rset->next()) {
-				vt.addRow(rset->getInt("order_id"), rset->getInt("book_ids"), 
+				vt.addRow(rset->getInt("order_id"), rset->getString("book_ids"),
 						  rset->getString("title"), rset->getString("author"), rset->getString("order_date"));
 			}
 			vt.print(cout);
@@ -404,37 +405,44 @@ int shippingPrice(int order_id) {
 	Database& db = Database::getInstance();
 	try {
 		Connection* con = db.getConnection();
-		PreparedStatement* pstmt = con->prepareStatement("CREATE TEMPORARY TABLE yad_two_store.table1 "
-			"SELECT book_amount, cust_price, ship_cost, book_weight, SUM(book_amount * cust_price + ship_cost + book_weight) AS sum_price "
+		PreparedStatement* pstmt = con->prepareStatement("CREATE TEMPORARY TABLE yad_two_store.temp_table "
+			"SELECT order_id, book_id, book_amount, book_weight, ship_cost, weight_amount, (SUM(weight_amount) + ship_cost)AS total_ship_amount "
 			"FROM( "
-				"SELECT order_details.order_id, order_details.book_id, cust_id, order_date, meth_id, ship_id, status_id, book_amount, book_weight "
-				"FROM yad_two_store.orders "
-				"LEFT JOIN yad_two_store.order_details ON order_details.order_id = orders.order_id "
-				"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = order_details.book_id "
-				"WHERE order_details.order_id = '" + to_string(order_id) + "' "
-			")AS bla "
-			"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = bla.book_id "
-			"LEFT JOIN yad_two_store.shipping_options ON shipping_options.ship_id = bla.ship_id; "
+				"SELECT GROUP_CONCAT(distinct(order_id))as order_id, GROUP_CONCAT(distinct(book_prices.book_id))as book_id, "
+				"GROUP_CONCAT(book_amount)as book_amount, GROUP_CONCAT(book_weight)as book_weight, "
+				"cust_price, ship_cost, SUM(book_amount * book_weight) AS weight_amount "
+				"FROM( "
+					"SELECT cust_id, order_date, meth_id, ship_id, status_id, book_amount, book_weight, order_details.order_id, book_attributes.book_id "
+					"FROM yad_two_store.orders  "
+					"LEFT JOIN yad_two_store.order_details ON order_details.order_id = orders.order_id "
+					"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = order_details.book_id "
+					"WHERE order_details.order_id = '" + to_string(order_id) + "' "
+				")AS ords "
+			"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = ords.book_id "
+			"LEFT JOIN yad_two_store.shipping_options ON shipping_options.ship_id = ords.ship_id "
+			")AS sum "
 		);
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
 
 
-		pstmt = con->prepareStatement("SELECT * FROM yad_two_store.table1; ");
+		pstmt = con->prepareStatement("SELECT * FROM yad_two_store.temp_table; ");
 		rset = pstmt->executeQuery();
 		rset->beforeFirst();
 
 		if (rset->rowsCount() == 0)
 			cout << '\n' << "error on calculation ship price" << '\n';
 		else {
-			VariadicTable<int, int, int, int, int> vt({ "book's number", "book's price", "ship cost", "book's weight", "total amount to pay" });
+			VariadicTable<int, string, string, string, int, int, int> 
+				vt({ "Order ID", "Book's ID", "Book's amount", "book's weight", "Ship cost", "Weight * Amount", "total ship amount" });
 			while (rset->next()) {
-				vt.addRow(rset->getInt("book_amount"), rset->getInt("cust_price"), rset->getInt("ship_cost"), rset->getInt("book_weight"), rset->getInt("sum_price"));
+				vt.addRow(rset->getInt("order_id"), rset->getString("book_id"), rset->getString("book_amount"), rset->getString("book_weight"),
+						  rset->getInt("ship_cost"), rset->getInt("weight_amount"), rset->getInt("total_ship_amount"));
 			}
 			vt.print(cout);
 		}
 
-		pstmt = con->prepareStatement("DROP TEMPORARY TABLE yad_two_store.table1; ");
+		pstmt = con->prepareStatement("DROP TEMPORARY TABLE yad_two_store.temp_table; ");
 		rset = pstmt->executeQuery();
 
 		delete pstmt;
@@ -457,10 +465,10 @@ int splittingShippOrder(int cust_id) {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT "
 			"order_id, book_id, cust_fname, order_date, meth_type, book_amount, cust_price, dest_type, "
-			"price_without_ship, status_type, ship_cost, (price_without_ship + ship_cost)as total_amount_topay "
+			"price_without_ship, status_type, weight_amount, ship_cost, (price_without_ship + weight_amount + ship_cost)as total_amount_topay "
 			"FROM ( "
 				"SELECT "
-				"book_prices.book_id, order_id, cust_fname, order_date, meth_id, ship_id, "
+				"book_prices.book_id, order_id, cust_fname, order_date, meth_id, ship_id, (book_amount * book_weight)AS weight_amount, "
 				"status_id, book_amount, dest_id1, book_prices.cust_price, (book_amount * book_prices.cust_price) as price_without_ship "
 				"FROM( "
 					"SELECT order_id, book_id, cust_fname, order_date, meth_id, ship_id, status_id, book_amount, dest_id1 "
@@ -469,15 +477,16 @@ int splittingShippOrder(int cust_id) {
 						"FROM yad_two_store.orders "
 						"LEFT JOIN yad_two_store.order_details ON order_details.order_id = orders.order_id "
 						"WHERE dest_id2 IS NOT NULL AND cust_id = '" + to_string(cust_id) + "' "
-					")AS bla "
-					"LEFT JOIN yad_two_store.customers ON customers.cust_id = bla.cust_id "
-				")AS blala "
-				"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = blala.book_id "
-			")AS bli "
-			"LEFT JOIN yad_two_store.shipping_status ON shipping_status.status_id = bli.status_id "
-			"LEFT JOIN yad_two_store.shipping_destination ON shipping_destination.dest_id = bli.dest_id1 "
-			"LEFT JOIN yad_two_store.method_options ON method_options.meth_id = bli.meth_id "
-			"LEFT JOIN yad_two_store.shipping_options ON shipping_options.ship_id = bli.ship_id "
+					")AS ords "
+					"LEFT JOIN yad_two_store.customers ON customers.cust_id = ords.cust_id "
+				")AS ords_cust "
+				"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = ords_cust.book_id "
+				"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = ords_cust.book_id "
+			")AS dets "
+			"LEFT JOIN yad_two_store.shipping_status ON shipping_status.status_id = dets.status_id "
+			"LEFT JOIN yad_two_store.shipping_destination ON shipping_destination.dest_id = dets.dest_id1 "
+			"LEFT JOIN yad_two_store.method_options ON method_options.meth_id = dets.meth_id "
+			"LEFT JOIN yad_two_store.shipping_options ON shipping_options.ship_id = dets.ship_id "
 		);
 
 		ResultSet* rset = pstmt->executeQuery();
@@ -486,14 +495,14 @@ int splittingShippOrder(int cust_id) {
 		if (rset->rowsCount() == 0)
 			cout << '\n' << "This customer didn't split any of his ships" << '\n';
 		else {
-			VariadicTable<int, int, string, string, string, int, int, string, int, string, int, int>
+			VariadicTable<int, int, string, string, string, int, int, string, int, string, string, int, int>
 				vt({ "Order ID", "Book ID", "customer name", "Order Date", "method type", "num of books",
-					"price", "destination", "price without shipping", "type", "ship cost", "total amount to pay" });
+					"price", "destination", "price without shipping", "type", "W * A", "ship cost", "total amount to pay" });
 			while (rset->next()) {
 				vt.addRow(rset->getInt("order_id"), rset->getInt("book_id"), rset->getString("cust_fname"), rset->getString("order_date"),
 					rset->getString("meth_type"), rset->getInt("book_amount"), rset->getInt("cust_price"),
 					rset->getString("dest_type"), rset->getInt("price_without_ship"),
-					rset->getString("status_type"), rset->getInt("ship_cost"), rset->getInt("total_amount_topay"));
+					rset->getString("status_type"), rset->getString("weight_amount"), rset->getInt("ship_cost"), rset->getInt("total_amount_topay"));
 			}
 			vt.print(cout);
 		}
@@ -565,12 +574,18 @@ int sumAmountInSpecificMonth(string year, string month) {
 	
 	try {
 		Connection* con = db.getConnection();
-		PreparedStatement* pstmt = con->prepareStatement("SELECT SUM(book_amount * cust_price + 30 + book_weight) AS sum_price "
-			"FROM yad_two_store.orders "
-			"LEFT JOIN yad_two_store.order_details ON order_details.order_id = orders.order_id "
-			"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = order_details.book_id "
-			"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = order_details.book_id "
-			"WHERE (order_date BETWEEN '" + year + "-''" + month + "-01' AND '" + year + "-''" + month + "-30') AND ship_id = 5; "
+		PreparedStatement* pstmt = con->prepareStatement("SELECT COUNT(order_id)AS order_num, SUM(order_price) sum_amount "
+			"FROM ( "
+				"SELECT order_details.order_id, book_attributes.book_id, title, ship_cost, book_amount, book_weight, cust_price, "
+				"SUM((book_amount * book_weight) + (book_amount * cust_price)) + ship_cost AS order_price "
+				"FROM yad_two_store.orders "
+				"LEFT JOIN yad_two_store.order_details ON order_details.order_id = orders.order_id "
+				"LEFT JOIN yad_two_store.book_attributes ON book_attributes.book_id = order_details.book_id "
+				"LEFT JOIN yad_two_store.shipping_options ON shipping_options.ship_id = orders.ship_id "
+				"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = order_details.book_id "
+				"WHERE order_date BETWEEN '" + year + "-''" + month + "-01' AND '" + year + "-''" + month + "-30' "
+				"GROUP BY order_id "
+			")AS sum "
 		);
 
 		ResultSet* rset = pstmt->executeQuery();
@@ -580,7 +595,8 @@ int sumAmountInSpecificMonth(string year, string month) {
 			cout << '\n' << "xpress didn't sent anithing in this month" << '\n';
 		else {
 			rset->next();
-			cout << '\n' << "xspress sum amount in  " << year << "-" << month << " is: " << rset->getInt("sum_price") << '\n';
+			cout << '\n' << "The number of shipps Xprees took in " << year << "-" << month << " is: " << rset->getInt("order_num")
+				 << '\n' << "and the sum amount of all of them is: " << rset->getInt("sum_amount") << '\n';
 		}
 
 		delete pstmt;
@@ -691,7 +707,7 @@ int sumAmountShipping() {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT SUM(ship_id = 5) AS xprss, SUM(ship_id = 1) AS isrl "
 			"FROM yad_two_store.orders "
-			"WHERE (order_date BETWEEN '2019-09-09' AND '2020-09-09') AND (ship_id = 5 OR ship_id = 1); "
+			"WHERE (order_date BETWEEN(NOW() - INTERVAL 1 year) AND NOW()) AND (ship_id = 5 OR ship_id = 1); "
 		);
 
 		ResultSet* rset = pstmt->executeQuery();
@@ -724,13 +740,11 @@ int shippDetailsBook() {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("CREATE TEMPORARY TABLE yad_two_store.tablee "
 			"SELECT order_id, group_concat(Distinct d.book_id SEPARATOR ',') AS books_ids, order_date, "
-			"GROUP_CONCAT(Distinct cust_fname SEPARATOR ',') AS cust_fname, "
-			"GROUP_CONCAT(Distinct cust_lname SEPARATOR ',') AS cust_lname, "
 			"CONCAT(cust_fname, ' ', cust_lname) AS full_name, "
 			"GROUP_CONCAT(book_amount SEPARATOR ',') AS books_numbers, "
 			"GROUP_CONCAT(Distinct e.status_type SEPARATOR ',') AS status_type, "
 			"GROUP_CONCAT(Distinct f.ship_cost SEPARATOR ',') AS ship_cost, "
-			"GROUP_CONCAT(Distinct dest_id1 SEPARATOR ',') AS dest_id1, "
+			"GROUP_CONCAT(Distinct dest_type SEPARATOR ',') AS dest_id1, "
 			"GROUP_CONCAT(Distinct title SEPARATOR ',') AS titless, "
 			"GROUP_CONCAT(book_weight SEPARATOR ',') AS weightss, "
 			"GROUP_CONCAT(cust_price SEPARATOR ',') AS prices "
@@ -748,6 +762,7 @@ int shippDetailsBook() {
 			"INNER JOIN yad_two_store.shipping_status e ON orders_det.status_id = e.status_id "
 			"INNER JOIN yad_two_store.shipping_options f ON orders_det.ship_id = f.ship_id "
 			"INNER JOIN yad_two_store.customers g ON orders_det.cust_id = g.cust_id "
+			"INNER JOIN yad_two_store.shipping_destination h ON orders_det.dest_id1 = h.dest_id "
 			"group by order_id "
 		);
 		ResultSet* rset = pstmt->executeQuery();
@@ -765,7 +780,7 @@ int shippDetailsBook() {
 			cout << '\n' << "there wasn't shipps like this" << '\n';
 		else {
 			VariadicTable<int, string, string, string, string, string, string, string, string, string, string>
-				vt({ "order_id", "books_ids", "order_date", "full_name", "books_numbers", "status_type", "ship_cost", "dest_id1", "titless", "weightss", "prices" });
+				vt({ "order_id", "books_ids", "order_date", "full_name", "books_numbers", "status_type", "ship_cost", "destination", "titless", "weightss", "prices" });
 			while (rset->next()) {
 				vt.addRow(rset->getInt("order_id"), rset->getString("books_ids"), rset->getString("order_date"), rset->getString("full_name"),
 						  rset->getString("books_numbers"), rset->getString("status_type"),
@@ -887,7 +902,7 @@ int storeBought(string sDate, string fDate) {
 	try {
 		Connection* con = db.getConnection();
 		PreparedStatement* pstmt = con->prepareStatement("SELECT "
-			"SUM(book_amount) AS books_num, SUM(book_amount * store_price + book_weight + ship_cost) as total_price "
+			"SUM(book_amount) AS books_num, SUM((book_amount * store_price) + (book_amount * book_weight) + ship_cost) AS total_price "
 			"FROM yad_two_store.orders "
 			"LEFT JOIN yad_two_store.order_details ON order_details.order_id = orders.order_id "
 			"LEFT JOIN yad_two_store.book_prices ON book_prices.book_id = order_details.book_id "
@@ -1069,14 +1084,13 @@ int employSalary(string year, string month, int emp_id) {
 			"LEFT JOIN yad_two_store.store_employees ON store_employees.emp_id = sales_bet.emp_id "
 			"WHERE sales_bet.emp_id = '" + to_string(emp_id) + "' AND year = '" + year + "' and months = '" + month + "'; "
 		);
-
+		
 		ResultSet* rset = pstmt->executeQuery();
 		rset->beforeFirst();
-
-		if (rset->rowsCount() == 0)
-			cout << '\n' << "erorr" << '\n';
+		rset->next();
+		if (rset->isNull("emp_fname") || rset->isNull("emp_lname")) 
+			cout << endl << "This emploee didn't work in this month" << endl;
 		else {
-			rset->next();
 			cout << "The bruto salary of " << rset->getString("emp_fname") << " " << rset->getString("emp_lname")
 				<< " is: " << rset->getInt("bruto_salary") << " and he sold in amount of: " << rset->getInt("sales")
 				<< " shekels! and woked " << rset->getInt("hours_per_month") << " hours in this month!" << '\n';
