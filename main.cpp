@@ -21,7 +21,7 @@ void otionsBar() {
 	cout << "2. The oldest customer" << '\n';
 	cout << "3. The oldest book" << '\n';
 	cout << "4. Order list" << '\n';
-	cout << "5. Number of book Y sold by yad2" << '\n';
+	cout << "5. Number of books __ sold by yad2" << '\n';
 	cout << "6. The most reader author between dates" << '\n';
 	cout << "7. Top 3 customers who bought the most" << '\n';
 	cout << "8. The book with the most translations" << '\n';
@@ -32,7 +32,7 @@ void otionsBar() {
 	cout << "13. Currently status of specific shipp" << '\n';
 	cout << "14. Sum of shipps made by Xpress in specific month" << '\n';
 	cout << "15. Sum of money transfered to yad2 by Bit App" << '\n';
-	cout << "16. /*---------------to complete-----------*/" << '\n';
+	cout << "16. Last year's transactions with profit higher than average" << '\n';
 	cout << "17. Number of shipps made by Israel post and Xpress at the last year" << '\n';
 	cout << "18. Details about all ships that included 2 editions of the same book" << '\n';
 	cout << "19. Details about customers that didn't buy at the last 24 months" << '\n';
@@ -107,7 +107,7 @@ int main(int argc, const char* argv[]) {
 			cout << "please insert final date" << '\n';
 			getline(cin, fDate);
 			if (!dateValidator(sDate) || !dateValidator(fDate)) {
-				cout << "please insert date in format yyyy-mm-tt. for example 2020-02-12" << endl;
+				cout << "invalid date or format. please insert date in format yyyy-mm-tt. for example 2020-02-12" << endl;
 				break;
 			}
 			mostPopularAuthor(sDate, fDate);
@@ -165,18 +165,18 @@ int main(int argc, const char* argv[]) {
 
 		case 14:
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-			cout << "please insert year" << '\n';
+			cout << "please insert year. for example 2020" << '\n';
 			getline(cin, sDate);
-			cout << "please insert month" << '\n';
+			cout << "please insert month. for example 01" << '\n';
 			getline(cin, fDate);
 			sumAmountInSpecificMonth(sDate, fDate);
 			break;
 
 		case 15:
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-			cout << "please insert year" << '\n';
+			cout << "please insert year. for example 2020" << '\n';
 			getline(cin, sDate);
-			cout << "please insert month" << '\n';
+			cout << "please insert month. for example 07" << '\n';
 			getline(cin, fDate);
 			sumAmountPayedInBit(sDate, fDate);
 			break;
@@ -206,14 +206,21 @@ int main(int argc, const char* argv[]) {
 			badCustomers();
 			break;
 
+		case 21:
+			cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+			cout << "please insert year" << '\n';
+			getline(cin, sDate);
+			numOfBooksInStorage(sDate);
+			break;
+
 		case 22:
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-			cout << "please insert start date" << '\n';
+			cout << "please insert start date. for example 2020-01-01" << '\n';
 			getline(cin, sDate);
-			cout << "please insert end date" << '\n';
+			cout << "please insert end date. for example 2020-07-19" << '\n';
 			getline(cin, fDate);
 			if (!dateValidator(sDate) || !dateValidator(fDate)) {
-				cout << "please insert date in format yyyy-mm-tt. for example 2020-02-12" << endl;
+				cout << "invalid date or format. please insert date in format yyyy-mm-tt. for example 2020-02-12" << endl;
 				break;
 			}
 			storeBought(sDate, fDate);
@@ -221,37 +228,37 @@ int main(int argc, const char* argv[]) {
 
 		case 23:
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-			cout << "please insert year" << '\n';
+			cout << "please insert year. for example 2020" << '\n';
 			getline(cin, sDate);
-			cout << "please insert month" << '\n';
+			cout << "please insert month. for example 07" << '\n';
 			getline(cin, fDate);
 			storeProfit(sDate, fDate);
 			break;
 
 		case 24:
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-			cout << "please insert year" << '\n';
+			cout << "please insert year. for example 2018" << '\n';
 			getline(cin, sDate);
 			transactionsAmountEveryMonth(sDate);
 			break;
 
 		case 25:
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-			cout << "please insert employ's id" << '\n';
+			cout << "please insert employ's id. for example 1" << '\n';
 			cin >> cust_id;
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-			cout << "please insert year" << '\n';
+			cout << "please insert year. for example 2018" << '\n';
 			getline(cin, sDate);
-			cout << "please insert month" << '\n';
+			cout << "please insert month. for example 01" << '\n';
 			getline(cin, fDate);
 			employSalary(sDate, fDate, cust_id);
 			break;
 
 		case 26:
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-			cout << "please insert year" << '\n';
+			cout << "please insert year. for example 2020" << '\n';
 			getline(cin, sDate);
-			cout << "please insert month" << '\n';
+			cout << "please insert month. for example 07" << '\n';
 			getline(cin, fDate);
 			bestSellerEmploy(sDate, fDate);
 			break;

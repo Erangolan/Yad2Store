@@ -33,7 +33,7 @@ int oldCustomers();
 int badCustomers();
 
 // 21 - 26
-/*-----to complete 21!!-------*/
+int numOfBooksInStorage(string year);
 int storeBought(string sDate, string fDate);
 int storeProfit(string year, string month);
 int transactionsAmountEveryMonth(string year);
