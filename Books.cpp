@@ -8,6 +8,20 @@
 using namespace std;
 using namespace sql;
 
+bool monthValidator(string month) {
+	if (month.size() != 2 || stoi(month) < 1 || stoi(month) > 12)
+		return false;
+
+	return true;
+}
+
+bool yearValidator(string year) {
+	if (year.size() != 4 || stoi(year) < 0)
+		return false;
+
+	return true;
+}
+
 
 /*========1========*/
 int showStorage(string title) {
@@ -599,6 +613,10 @@ int specificOrderStatus(int order_id) {
 // sum amount of xpress in specific month
 int sumAmountInSpecificMonth(string year, string month) {
 	Database& db = Database::getInstance();
+	if (!yearValidator(year) || !monthValidator(month)) {
+		cout << "invalid year or month" << '\n';
+		return 0;
+	}
 	
 	try {
 		Connection* con = db.getConnection();
@@ -643,6 +661,10 @@ int sumAmountInSpecificMonth(string year, string month) {
 // sum amount payd in bit in specific month
 int sumAmountPayedInBit(string year, string month) {
 	Database& db = Database::getInstance();
+	if (!yearValidator(year) || !monthValidator(month)) {
+		cout << "invalid year or month" << '\n';
+		return 0;
+	}
 
 	try {
 		Connection* con = db.getConnection();
@@ -933,6 +955,10 @@ int badCustomers() {
 // number of books in storage evry month
 int numOfBooksInStorage(string year) {
 	Database& db = Database::getInstance();
+	if (!yearValidator(year)) {
+		cout << "invalid year or month" << '\n';
+		return 0;
+	}
 	string nextYear = to_string(stoi(year) + 1);
 
 	try {
@@ -1130,6 +1156,10 @@ int storeBought(string sDate, string fDate) {
 // total profit the store made in specific month 
 int storeProfit(string year, string month) {
 	Database& db = Database::getInstance();
+	if (!yearValidator(year) || !monthValidator(month)) {
+		cout << "invalid year or month" << '\n';
+		return 0;
+	}
 
 	try {	
 		Connection* con = db.getConnection();
@@ -1165,6 +1195,10 @@ int storeProfit(string year, string month) {
 //amount of transactions made every month
 int transactionsAmountEveryMonth(string year) {
 	Database& db = Database::getInstance();
+	if (!yearValidator(year)) {
+		cout << "invalid year or month" << '\n';
+		return 0;
+	}
 	string nextYear = to_string(stoi(year) + 1);
 
 	try {	
@@ -1264,6 +1298,10 @@ int transactionsAmountEveryMonth(string year) {
 // salary of employ in specific month
 int employSalary(string year, string month, int emp_id) {
 	Database& db = Database::getInstance();
+	if (!yearValidator(year) || !monthValidator(month)) {
+		cout << "invalid year or month" << '\n';
+		return 0;
+	}
 
 	try {	
 		Connection* con = db.getConnection();
@@ -1307,6 +1345,10 @@ int employSalary(string year, string month, int emp_id) {
 // best employ in specific month (sold the most)
 int bestSellerEmploy(string year, string month) {
 	Database& db = Database::getInstance();
+	if (!yearValidator(year) || !monthValidator(month)) {
+		cout << "invalid year or month" << '\n';
+		return 0;
+	}
 
 	try {
 		Connection* con = db.getConnection();

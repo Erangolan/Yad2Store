@@ -102,9 +102,9 @@ int main(int argc, const char* argv[]) {
 
 		case 6:
 			cin.ignore(std::numeric_limits<streamsize>::max(),'\n');
-			cout << "please insert start date" << '\n';
+			cout << "please insert start date. for example 2018-02-12" << '\n';
 			getline(cin, sDate);
-			cout << "please insert final date" << '\n';
+			cout << "please insert final date. for example 2020-02-13" << '\n';
 			getline(cin, fDate);
 			if (!dateValidator(sDate) || !dateValidator(fDate)) {
 				cout << "invalid date or format. please insert date in format yyyy-mm-tt. for example 2020-02-12" << endl;
